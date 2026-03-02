@@ -12,17 +12,17 @@ WealthWise bridges that gap.
 
 ---
 
-## 💡 What It Does
+## What It Does
 
 WealthWise is a unified platform combining:
-- 📊 **Portfolio Tracker** — Track stocks, mutual funds, ETFs, and gold in one place
-- 🎯 **Savings Goals** — Save toward trips, gadgets, emergency funds with visual progress
-- ⚖️ **Smart Rebalancer** — Get suggestions to maintain your ideal asset allocation
-- 🏠 **Net Worth Dashboard** — See your complete financial picture at a glance
+- **Portfolio Tracker** — Track stocks, mutual funds, ETFs, and gold in one place
+- **Savings Goals** — Save toward trips, gadgets, emergency funds with visual progress
+- **Smart Rebalancer** — Get suggestions to maintain your ideal asset allocation
+- **Net Worth Dashboard** — See your complete financial picture at a glance
 
 ---
 
-## 🏗️ App Structure
+## App Structure
 
 ```
 WealthWise
@@ -65,7 +65,7 @@ WealthWise
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 - Node.js (v18+)
@@ -101,7 +101,7 @@ VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 
 ---
 
-## 🗺️ Roadmap
+## Roadmap
 
 - [x] Project setup (React + Vite + Supabase)
 - [x] Authentication (Login / Signup)
@@ -115,7 +115,7 @@ VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 wealthwise/
@@ -133,16 +133,10 @@ wealthwise/
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 This is a learning project. PRs and feedback welcome!
 
 ---
 
-## 📄 License
-
-MIT
-
----
-
-*Built with ❤️ for young India*
+*Built with ❤️ by Vatsalya*
