@@ -6,7 +6,7 @@
 
 ## Problem Statement
 
-Young Indians (18–30) are financially aware but overwhelmed. They have SIPs on Groww, stocks on Zerodha, gold somewhere — but **no single place** that shows them the full picture. Most finance apps are either too complex or too shallow.
+Young Indians (18–30) are financially aware but overwhelmed. They have SIPs on Groww, stocks on Zerodha, gold somewhere but **no single place** that shows them the full picture. Most finance apps are either too complex or too shallow.
 
 WealthWise bridges that gap.
 
@@ -15,10 +15,10 @@ WealthWise bridges that gap.
 ## What It Does
 
 WealthWise is a unified platform combining:
-- **Portfolio Tracker** — Track stocks, mutual funds, ETFs, and gold in one place
-- **Savings Goals** — Save toward trips, gadgets, emergency funds with visual progress
-- **Smart Rebalancer** — Get suggestions to maintain your ideal asset allocation
-- **Net Worth Dashboard** — See your complete financial picture at a glance
+- **Portfolio Tracker** : Track stocks, mutual funds, ETFs, and gold in one place
+- **Savings Goals** : Save toward trips, gadgets, emergency funds with visual progress
+- **Smart Rebalancer** : Get suggestions to maintain your ideal asset allocation
+- **Net Worth Dashboard** : See your complete financial picture at a glance
 
 ---
 
@@ -105,9 +105,9 @@ VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 
 - [x] Project setup (React + Vite + Supabase)
 - [x] Authentication (Login / Signup)
-- [ ] Dashboard — Net worth + summary cards
-- [ ] Portfolio Tracker — Add & view investments
-- [ ] Savings Goals — Create & track goals
+- [ ] Dashboard : Net worth + summary cards
+- [ ] Portfolio Tracker : Add & view investments
+- [ ] Savings Goals : Create & track goals
 - [ ] Charts & Visuals
 - [ ] Smart Rebalancer
 - [ ] Mobile responsive design
