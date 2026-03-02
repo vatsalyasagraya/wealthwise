@@ -5,6 +5,7 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Portfolio from "./pages/Portfolio";
 import Goals from "./pages/Goals";
+import Rebalancer from "./pages/Rebalancer";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Layout from "./components/Layout";
 
@@ -36,6 +37,7 @@ export default function App() {
         <Route path="/dashboard" element={<Dashboard user={user} />} />
         <Route path="/portfolio" element={<Portfolio user={user} />} />
         <Route path="/goals" element={<Goals user={user} />} />
+        <Route path="/rebalancer" element={<Rebalancer user={user} />} />
       </Route>
     </Routes>
   );

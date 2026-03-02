@@ -55,6 +55,17 @@ export default function Navbar({ user }) {
         >
           🎯 Goals
         </button>
+
+        <button
+          onClick={() => navigate("/rebalancer")}
+          className={`text-sm font-medium transition-all ${
+            isActive("/rebalancer")
+              ? "text-indigo-600"
+              : "text-gray-500 hover:text-indigo-500"
+          }`}
+        >
+          ⚖️ Rebalancer
+        </button>
       </div>
 
       {/* User + Logout */}
