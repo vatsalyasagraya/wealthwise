@@ -1,12 +1,28 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../supabaseClient";
 import { useNavigate } from "react-router-dom";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  Cell,
+} from "recharts";
 
 const TYPE_COLORS = {
   Stocks: "bg-indigo-500",
   "Mutual Funds": "bg-purple-500",
   ETF: "bg-green-500",
   Gold: "bg-yellow-500",
+};
+
+const TYPE_CHART_COLORS = {
+  Stocks: "#6366f1",
+  "Mutual Funds": "#a855f7",
+  ETF: "#22c55e",
+  Gold: "#eab308",
 };
 
 const TYPE_CARD_COLORS = {
@@ -138,6 +154,43 @@ export default function Dashboard({ user }) {
                 />
               ))}
             </div>
+            {/* Bar Chart */}
+            {portfolio.length > 0 && (
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart
+                  data={portfolio}
+                  margin={{ top: 0, right: 0, left: 0, bottom: 0 }}
+                >
+                  <XAxis
+                    dataKey="name"
+                    tick={{ fontSize: 12, fill: "#94a3b8" }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <YAxis
+                    tick={{ fontSize: 11, fill: "#94a3b8" }}
+                    axisLine={false}
+                    tickLine={false}
+                    tickFormatter={(v) => `₹${(v / 1000).toFixed(0)}k`}
+                  />
+                  <Tooltip
+                    formatter={(value) => [
+                      `₹${value.toLocaleString("en-IN")}`,
+                      "Value",
+                    ]}
+                    cursor={{ fill: "#f1f5f9" }}
+                  />
+                  <Bar dataKey="value" radius={[6, 6, 0, 0]}>
+                    {portfolio.map((entry) => (
+                      <Cell
+                        key={entry.name}
+                        fill={TYPE_CHART_COLORS[entry.name] || "#94a3b8"}
+                      />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            )}
 
             {/* Breakdown Cards */}
             <div className="grid grid-cols-2 gap-4">
