@@ -97,7 +97,7 @@ export default function Rebalancer({ user }) {
 
       {/* Header */}
       <div>
-        <h2 className="text-2xl font-bold text-gray-800">⚖️ Portfolio Rebalancer</h2>
+        <h2 className="text-2xl font-bold text-gray-800">Portfolio Rebalancer</h2>
         <p className="text-gray-500 text-sm mt-1">
           Set your target allocation and see exactly what to buy or sell
         </p>

@@ -95,7 +95,7 @@ export default function Dashboard({ user }) {
     <div className="max-w-5xl mx-auto px-6 py-8 space-y-8">
       {/* Welcome */}
       <div>
-        <h2 className="text-2xl font-bold text-gray-800">Hey there 👋</h2>
+        <h2 className="text-2xl font-bold text-gray-800">Hey there!</h2>
         <p className="text-gray-500 mt-1">
           Here's your financial snapshot for today.
         </p>
@@ -107,7 +107,7 @@ export default function Dashboard({ user }) {
         {loading ? (
           <p className="text-indigo-200 mt-2">Calculating...</p>
         ) : (
-          <h2 className="text-4xl font-bold mt-1">
+          <h2 className="text-3xl md:text-4xl font-bold mt-1">
             ₹{netWorth.toLocaleString("en-IN")}
           </h2>
         )}
@@ -120,7 +120,7 @@ export default function Dashboard({ user }) {
       <div className="bg-white rounded-2xl shadow-sm p-6">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-semibold text-gray-800">
-            📊 Portfolio Breakdown
+            Portfolio Breakdown
           </h3>
           <button
             onClick={() => navigate("/portfolio")}
@@ -193,7 +193,7 @@ export default function Dashboard({ user }) {
             )}
 
             {/* Breakdown Cards */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {portfolio.map((item) => (
                 <div
                   key={item.name}
@@ -222,7 +222,7 @@ export default function Dashboard({ user }) {
 
       <div className="bg-white rounded-2xl shadow-sm p-6">
         <h3 className="text-lg font-semibold text-gray-800 mb-4">
-          🎯 Savings Goals
+          Savings Goals
         </h3>
         <div className="space-y-5">
           {goals.length === 0 ? (

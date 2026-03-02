@@ -103,22 +103,20 @@ export default function Goals({ user }) {
 
   return (
     <div className="max-w-3xl mx-auto px-6 py-8 space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-start gap-1">
         <div>
-          <h2 className="text-2xl font-bold text-gray-800">🎯 Savings Goals</h2>
+          <h2 className="text-2xl font-bold text-gray-800">Savings Goals</h2>
           <p className="text-gray-500 text-sm mt-1">
             Save toward the things that matter
           </p>
         </div>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-all"
+          className="flex-shrink-0 bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-all whitespace-nowrap"
         >
           {showForm ? "Cancel" : "+ New Goal"}
         </button>
       </div>
-
       {/* Create Goal Form */}
       {showForm && (
         <div className="bg-white rounded-2xl shadow-sm p-6 space-y-4">
@@ -183,7 +181,6 @@ export default function Goals({ user }) {
           </button>
         </div>
       )}
-
       {/* Goals List */}
       {loading ? (
         <p className="text-gray-400 text-sm text-center py-12">Loading...</p>
@@ -230,7 +227,7 @@ export default function Goals({ user }) {
                 </div>
 
                 {/* Replace the old progress bar section with this */}
-                <div className="flex items-center gap-4 mb-4">
+                <div className="flex items-center gap-3 mb-4">
                   {/* Big percentage circle */}
                   <div className={`relative w-16 h-16 flex-shrink-0`}>
                     <svg viewBox="0 0 36 36" className="w-16 h-16 -rotate-90">
@@ -293,7 +290,7 @@ export default function Goals({ user }) {
                 {/* Add Money Section */}
                 {!isComplete &&
                   (addingTo === goal.id ? (
-                    <div className="flex gap-2">
+                    <div className="flex flex-col sm:flex-row gap-2">
                       <input
                         type="number"
                         placeholder="Amount to add (₹)"
