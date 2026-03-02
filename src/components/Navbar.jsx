@@ -1,23 +1,23 @@
-import { useNavigate, useLocation } from 'react-router-dom'
-import { supabase } from '../supabaseClient'
+import { useNavigate, useLocation } from "react-router-dom";
+import { supabase } from "../supabaseClient";
 
 export default function Navbar({ user }) {
-  const navigate = useNavigate()
-  const location = useLocation() // tells us which page we're on
+  const navigate = useNavigate();
+  const location = useLocation(); // tells us which page we're on
 
   const handleLogout = async () => {
-    await supabase.auth.signOut()
-    navigate('/login')
-  }
+    await supabase.auth.signOut();
+    navigate("/login");
+  };
 
   // Helper to highlight the active page link
-  const isActive = (path) => location.pathname === path
+  const isActive = (path) => location.pathname === path;
 
   return (
     <nav className="bg-white shadow-sm px-6 py-4 flex justify-between items-center">
       {/* Logo */}
       <h1
-        onClick={() => navigate('/dashboard')}
+        onClick={() => navigate("/dashboard")}
         className="text-xl font-bold text-indigo-600 cursor-pointer"
       >
         💰 WealthWise
@@ -26,20 +26,34 @@ export default function Navbar({ user }) {
       {/* Nav Links */}
       <div className="flex items-center gap-6">
         <button
-          onClick={() => navigate('/dashboard')}
+          onClick={() => navigate("/dashboard")}
           className={`text-sm font-medium transition-all ${
-            isActive('/dashboard') ? 'text-indigo-600' : 'text-gray-500 hover:text-indigo-500'
+            isActive("/dashboard")
+              ? "text-indigo-600"
+              : "text-gray-500 hover:text-indigo-500"
           }`}
         >
           🏠 Dashboard
         </button>
         <button
-          onClick={() => navigate('/portfolio')}
+          onClick={() => navigate("/portfolio")}
           className={`text-sm font-medium transition-all ${
-            isActive('/portfolio') ? 'text-indigo-600' : 'text-gray-500 hover:text-indigo-500'
+            isActive("/portfolio")
+              ? "text-indigo-600"
+              : "text-gray-500 hover:text-indigo-500"
           }`}
         >
           📊 Portfolio
+        </button>
+        <button
+          onClick={() => navigate("/goals")}
+          className={`text-sm font-medium transition-all ${
+            isActive("/goals")
+              ? "text-indigo-600"
+              : "text-gray-500 hover:text-indigo-500"
+          }`}
+        >
+          🎯 Goals
         </button>
       </div>
 
@@ -54,5 +68,5 @@ export default function Navbar({ user }) {
         </button>
       </div>
     </nav>
-  )
+  );
 }
