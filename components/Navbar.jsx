@@ -1,18 +1,42 @@
+// ============================================================
+// components/Navbar.jsx
+// ============================================================
+//
+// 🧠 CHANGES FROM THE OLD VERSION:
+//   - Added 'use client' (required since we use hooks and onClick)
+//   - useNavigate() → useRouter() from 'next/navigation'
+//   - useLocation()  → usePathname() from 'next/navigation'
+//   - navigate('/path') → router.push('/path')
+//
+// 🧠 NEXT.JS CONCEPT: useRouter
+// --------------------------------
+// import { useRouter } from 'next/navigation'  ← correct for App Router
+// (NOT from 'next/router' — that's the OLD Pages Router)
+//
+// router.push('/path')    → navigate, adds to browser history
+// router.replace('/path') → navigate, replaces current history entry
+//
+// 🧠 NEXT.JS CONCEPT: usePathname
+// --------------------------------
+// Returns the current URL path (e.g. "/dashboard").
+// Used here to highlight the active nav link.
+'use client'
+
 import { useState } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
-import { supabase } from '../supabaseClient'
+import { useRouter, usePathname } from 'next/navigation'
+import { supabase } from '@/lib/supabase'
 
 export default function Navbar({ user }) {
-  const navigate = useNavigate()
-  const location = useLocation()
+  const router = useRouter()
+  const pathname = usePathname()
   const [menuOpen, setMenuOpen] = useState(false)
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
-    navigate('/login')
+    router.push('/login')
   }
 
-  const isActive = (path) => location.pathname === path
+  const isActive = (path) => pathname === path
 
   const navLinks = [
     { path: '/dashboard', label: '🏠 Dashboard' },
@@ -22,7 +46,7 @@ export default function Navbar({ user }) {
   ]
 
   const handleNavigate = (path) => {
-    navigate(path)
+    router.push(path)
     setMenuOpen(false)
   }
 
@@ -32,7 +56,7 @@ export default function Navbar({ user }) {
 
         {/* Logo */}
         <h1
-          onClick={() => navigate('/dashboard')}
+          onClick={() => router.push('/dashboard')}
           className="text-xl font-bold text-indigo-600 cursor-pointer"
         >
           WealthWise
@@ -43,7 +67,7 @@ export default function Navbar({ user }) {
           {navLinks.map((link) => (
             <button
               key={link.path}
-              onClick={() => navigate(link.path)}
+              onClick={() => router.push(link.path)}
               className={`text-sm font-medium transition-all ${
                 isActive(link.path)
                   ? 'text-indigo-600'

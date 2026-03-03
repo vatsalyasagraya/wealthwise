@@ -1,0 +1,7 @@
+/* ============================================================
+   WealthWise — Global Styles
+   ============================================================
+   This file is imported in app/layout.jsx and applies to every page.
+   @import "tailwindcss" loads all of Tailwind v4's utility classes.
+*/
+@import "tailwindcss";

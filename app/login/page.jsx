@@ -1,28 +1,46 @@
-import { useState } from 'react'
-import { supabase } from '../supabaseClient'
-import { useNavigate } from 'react-router-dom'
+// ============================================================
+// app/login/page.jsx
+// ============================================================
+//
+// 🧠 NEXT.JS CONCEPT: 'use client' on Pages
+// ------------------------------------------
+// All pages that use React hooks (useState, useEffect)
+// or handle user events (onClick, onChange) need 'use client'.
+//
+// This is one key difference from Vite/React:
+//   - In Vite: ALL components are client-side by default
+//   - In Next.js: components are SERVER-side by default
+//     → You opt IN to client rendering with 'use client'
+//
+// 🧠 NEXT.JS CONCEPT: useRouter (App Router version)
+// ---------------------------------------------------
+// import { useRouter } from 'next/navigation'  ← App Router ✅
+// import { useRouter } from 'next/router'       ← Pages Router ❌ (old)
+// router.push('/dashboard') replaces navigate('/dashboard')
+'use client'
 
-export default function Login() {
+import { useState } from 'react'
+import { supabase } from '@/lib/supabase'
+import { useRouter } from 'next/navigation'
+
+export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isLogin, setIsLogin] = useState(true)
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(false)
 
-
-  const navigate = useNavigate()
+  const router = useRouter()
 
   const handleAuth = async () => {
     setLoading(true)
     setMessage('')
 
     if (isLogin) {
-      // Supabase login function
       const { error } = await supabase.auth.signInWithPassword({ email, password })
       if (error) setMessage(error.message)
-      else navigate('/dashboard')  // redirect on success
+      else router.push('/dashboard')  // ← router.push() replaces navigate()
     } else {
-      // Supabase signup function
       const { error } = await supabase.auth.signUp({ email, password })
       if (error) setMessage(error.message)
       else setMessage('✅ Account created! You can now log in.')
@@ -34,7 +52,7 @@ export default function Login() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-50 flex items-center justify-center">
       <div className="bg-white rounded-2xl shadow-lg p-8 w-full max-w-md">
-        
+
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-indigo-600">WealthWise</h1>
