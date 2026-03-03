@@ -145,13 +145,11 @@ export default function DashboardPage() {
             </ResponsiveContainer>
             <div className="grid grid-cols-2 gap-3 mt-4">
               {portfolio.map((item) => (
-                <div key={item.name} className="flex items-center justify-between bg-slate-50 rounded-xl px-4 py-3">
-                  <div className="flex items-center gap-2">
-                    <div className={`w-2.5 h-2.5 rounded-full ${TYPE_DOT_COLORS[item.name] || 'bg-slate-400'}`} />
-                    <span className="text-sm text-slate-600">{item.name}</span>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-semibold text-slate-900">₹{item.value.toLocaleString('en-IN')}</p>
+                <div key={item.name} className="flex items-start gap-2.5 bg-slate-50 rounded-xl px-3 py-3">
+                  <div className={`w-2.5 h-2.5 rounded-full mt-1 flex-shrink-0 ${TYPE_DOT_COLORS[item.name] || 'bg-slate-400'}`} />
+                  <div className="min-w-0">
+                    <p className="text-xs text-slate-500 leading-tight">{item.name}</p>
+                    <p className="text-sm font-bold text-slate-900 mt-0.5">₹{item.value.toLocaleString('en-IN')}</p>
                     <p className="text-xs text-slate-400">{((item.value / netWorth) * 100).toFixed(1)}%</p>
                   </div>
                 </div>

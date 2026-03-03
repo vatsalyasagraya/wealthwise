@@ -177,13 +177,18 @@ export default function PortfolioPage() {
           <div className="space-y-2">
             {investments.map((inv) => (
               <div key={inv.id}
-                className="flex items-center justify-between px-4 py-3.5 bg-slate-50 hover:bg-slate-100 rounded-xl transition-colors group">
-                <div className="flex items-center gap-3">
-                  <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${TYPE_BADGE[inv.type]}`}>{inv.type}</span>
-                  <span className="text-sm font-medium text-slate-800">{inv.name}</span>
+                className="flex items-center gap-2 px-3 py-3 bg-slate-50 hover:bg-slate-100 rounded-xl transition-colors group">
+
+                {/* Left: badge + name (min-w-0 allows truncation) */}
+                <div className="flex items-center gap-2 min-w-0 flex-1">
+                  <span className={`flex-shrink-0 text-xs font-medium px-2 py-1 rounded-full ${TYPE_BADGE[inv.type]}`}>
+                    {inv.type}
+                  </span>
+                  <span className="text-sm font-medium text-slate-800 truncate">{inv.name}</span>
                 </div>
-                <div className="flex items-center gap-3">
-                  {/* Inline edit */}
+
+                {/* Right: value + action buttons (flex-shrink-0 keeps it from overflowing) */}
+                <div className="flex items-center gap-1.5 flex-shrink-0">
                   {editingId === inv.id ? (
                     <input
                       type="number"
@@ -192,7 +197,7 @@ export default function PortfolioPage() {
                       onBlur={() => handleUpdateAmount(inv.id)}
                       onKeyDown={(e) => e.key === 'Enter' && handleUpdateAmount(inv.id)}
                       autoFocus
-                      className="w-28 border border-indigo-300 rounded-lg px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 text-right"
+                      className="w-24 border border-indigo-300 rounded-lg px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 text-right"
                     />
                   ) : (
                     <span
@@ -203,18 +208,18 @@ export default function PortfolioPage() {
                       ₹{inv.amount.toLocaleString('en-IN')}
                     </span>
                   )}
-                  {/* Edit pencil */}
+                  {/* Pencil — desktop hover-only, always visible on mobile */}
                   <button
                     onClick={() => { setEditingId(inv.id); setEditAmount(inv.amount) }}
-                    className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-indigo-500 transition-all"
+                    className="sm:opacity-0 sm:group-hover:opacity-100 opacity-100 text-slate-400 hover:text-indigo-500 transition-all p-1"
                     title="Edit value"
                   >
                     ✏️
                   </button>
-                  {/* Delete */}
+                  {/* Delete — always visible */}
                   <button
                     onClick={() => handleDelete(inv.id)}
-                    className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-500 transition-all text-sm"
+                    className="sm:opacity-0 sm:group-hover:opacity-100 opacity-100 text-slate-400 hover:text-red-500 transition-all p-1"
                     title="Delete"
                   >
                     ✕

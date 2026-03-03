@@ -36,34 +36,36 @@ export default function RebalancerPage() {
   }), {})
 
   // Auto-balance: when one slider moves, distribute the remaining %
-  // proportionally among the other three sliders
+  // proportionally among the other three sliders.
+  // Uses Math.floor (not Math.round) for non-last items so that
+  // "assigned" can never exceed "remaining" → no negatives, total always = 100.
   const handleTargetChange = (changedType, rawValue) => {
-    const newVal = Math.min(100, Math.max(0, parseInt(rawValue)))
+    const newVal = Math.min(100, Math.max(0, parseInt(rawValue) || 0))
     const remaining = 100 - newVal
     const others = INVESTMENT_TYPES.filter((t) => t !== changedType)
     const othersTotal = others.reduce((s, t) => s + targets[t], 0)
 
     const newTargets = { ...targets, [changedType]: newVal }
+    let assigned = 0
 
-    if (othersTotal === 0) {
-      // Edge case: distribute evenly
-      const each = Math.floor(remaining / others.length)
-      others.forEach((t, i) => {
-        newTargets[t] = i === others.length - 1 ? remaining - each * (others.length - 1) : each
-      })
-    } else {
-      // Distribute proportionally
-      let assigned = 0
-      others.forEach((t, i) => {
-        if (i === others.length - 1) {
-          newTargets[t] = remaining - assigned  // remainder to last slot — total always = 100
-        } else {
-          const share = Math.round((targets[t] / othersTotal) * remaining)
-          newTargets[t] = share
-          assigned += share
-        }
-      })
-    }
+    others.forEach((t, i) => {
+      if (i === others.length - 1) {
+        // Last gets the exact remainder so sum is always 100
+        newTargets[t] = Math.max(0, remaining - assigned)
+      } else if (othersTotal === 0) {
+        // All others are 0 → distribute evenly
+        const share = i < remaining % others.length
+          ? Math.floor(remaining / others.length) + 1
+          : Math.floor(remaining / others.length)
+        newTargets[t] = share
+        assigned += share
+      } else {
+        // Proportional — floor guarantees assigned <= remaining
+        const share = Math.floor((targets[t] / othersTotal) * remaining)
+        newTargets[t] = share
+        assigned += share
+      }
+    })
 
     setTargets(newTargets)
   }
@@ -115,13 +117,16 @@ export default function RebalancerPage() {
             {INVESTMENT_TYPES.map((type) => (
               <div key={type}>
                 <div className="flex justify-between items-center mb-1.5">
-                  <label className="text-sm font-medium text-slate-700">{type}</label>
-                  <span className="text-sm font-bold" style={{ color: TYPE_COLORS[type] }}>{targets[type]}%</span>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: TYPE_COLORS[type] }} />
+                    <label className="text-sm font-medium text-slate-700">{type}</label>
+                  </div>
+                  <span className="text-sm font-bold text-indigo-600">{targets[type]}%</span>
                 </div>
+                {/* Single consistent accent color avoids black/white on Safari/iOS */}
                 <input type="range" min="0" max="100" value={targets[type]}
                   onChange={(e) => handleTargetChange(type, e.target.value)}
-                  className="w-full accent-indigo-600 h-2 cursor-pointer"
-                  style={{ accentColor: TYPE_COLORS[type] }}
+                  className="w-full h-2 cursor-pointer accent-indigo-600"
                 />
                 <div className="flex justify-between text-xs text-slate-400 mt-1">
                   <span>Actual: {actual[type].toFixed(1)}%</span>
