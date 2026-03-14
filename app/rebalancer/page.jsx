@@ -3,22 +3,21 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useUser } from '@/lib/useUser'
-import { RadarChart, Radar, PolarGrid, PolarAngleAxis, ResponsiveContainer, Tooltip } from 'recharts'
-import Skeleton from '@/components/Skeleton'
+import { Radar, RadarChart, PolarGrid, PolarAngleAxis, ResponsiveContainer } from 'recharts'
+import Skeleton, { SkeletonCard } from '@/components/Skeleton'
+import { ScaleIcon, ArrowUpIcon, ArrowDownIcon } from '@/components/Icons'
 
 const INVESTMENT_TYPES = ['Stocks', 'Mutual Funds', 'ETF', 'Gold']
-
-const TYPE_COLORS = {
-  Stocks: '#6366f1', 'Mutual Funds': '#a855f7', ETF: '#22c55e', Gold: '#eab308',
-}
-
-const DEFAULT_TARGETS = { Stocks: 50, 'Mutual Funds': 30, ETF: 10, Gold: 10 }
+const TYPE_COLORS = { Stocks: '#6366f1', 'Mutual Funds': '#a855f7', ETF: '#22c55e', Gold: '#eab308' }
 
 export default function RebalancerPage() {
   const { user, loading: authLoading } = useUser()
-  const [investments, setInvestments]  = useState([])
-  const [loading, setLoading]          = useState(true)
-  const [targets, setTargets]          = useState(DEFAULT_TARGETS)
+  const [investments, setInvestments] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  const [targets, setTargets] = useState(
+    INVESTMENT_TYPES.reduce((a, t) => ({ ...a, [t]: 25 }), {})
+  )
 
   useEffect(() => { if (user) fetchInvestments() }, [user])
 
@@ -29,16 +28,12 @@ export default function RebalancerPage() {
     setLoading(false)
   }
 
-  const byType         = investments.reduce((a, i) => ({ ...a, [i.type]: (a[i.type] || 0) + i.amount }), {})
-  const totalPortfolio = investments.reduce((s, i) => s + i.amount, 0)
-  const actual         = INVESTMENT_TYPES.reduce((a, t) => ({
-    ...a, [t]: totalPortfolio > 0 ? ((byType[t] || 0) / totalPortfolio) * 100 : 0,
+  const total = investments.reduce((s, i) => s + i.amount, 0)
+  const actual = INVESTMENT_TYPES.reduce((a, t) => ({
+    ...a,
+    [t]: total > 0 ? (investments.filter(i => i.type === t).reduce((s, i) => s + i.amount, 0) / total) * 100 : 0,
   }), {})
 
-  // Auto-balance: when one slider moves, distribute the remaining %
-  // proportionally among the other three sliders.
-  // Uses Math.floor (not Math.round) for non-last items so that
-  // "assigned" can never exceed "remaining" → no negatives, total always = 100.
   const handleTargetChange = (changedType, rawValue) => {
     const newVal = Math.min(100, Math.max(0, parseInt(rawValue) || 0))
     const remaining = 100 - newVal
@@ -50,17 +45,14 @@ export default function RebalancerPage() {
 
     others.forEach((t, i) => {
       if (i === others.length - 1) {
-        // Last gets the exact remainder so sum is always 100
         newTargets[t] = Math.max(0, remaining - assigned)
       } else if (othersTotal === 0) {
-        // All others are 0 → distribute evenly
         const share = i < remaining % others.length
           ? Math.floor(remaining / others.length) + 1
           : Math.floor(remaining / others.length)
         newTargets[t] = share
         assigned += share
       } else {
-        // Proportional — floor guarantees assigned <= remaining
         const share = Math.floor((targets[t] / othersTotal) * remaining)
         newTargets[t] = share
         assigned += share
@@ -70,132 +62,165 @@ export default function RebalancerPage() {
     setTargets(newTargets)
   }
 
-  const suggestions = INVESTMENT_TYPES.map((type) => {
-    const targetAmt = (targets[type] / 100) * totalPortfolio
-    const actualAmt = byType[type] || 0
-    return { type, targetPercent: targets[type], actualPercent: actual[type], diff: targetAmt - actualAmt }
+  const suggestions = INVESTMENT_TYPES.map((t) => {
+    const actualAmt = investments.filter(i => i.type === t).reduce((s, i) => s + i.amount, 0)
+    const targetAmt = (targets[t] / 100) * total
+    const diff = targetAmt - actualAmt
+    return { type: t, actual: actualAmt, target: targetAmt, diff, action: diff > 100 ? 'BUY' : diff < -100 ? 'SELL' : 'HOLD' }
   })
 
-  const radarData = INVESTMENT_TYPES.map((type) => ({
-    type, Target: targets[type], Actual: parseFloat(actual[type].toFixed(1)),
+  const radarData = INVESTMENT_TYPES.map((t) => ({
+    type: t, target: targets[t], actual: parseFloat(actual[t].toFixed(1)),
   }))
 
   if (authLoading) return (
-    <div className="max-w-3xl mx-auto px-6 py-8 space-y-4">
-      <Skeleton className="h-8 w-48" /><Skeleton className="h-64 w-full" />
-    </div>
+    <div className="max-w-4xl mx-auto px-6 py-8 space-y-4"><SkeletonCard /><SkeletonCard /></div>
   )
   if (!user) return null
 
   return (
-    <div className="max-w-3xl mx-auto px-6 py-8 space-y-6 fade-in">
+    <div className="max-w-4xl mx-auto px-6 py-8 space-y-6 fade-in">
+
+      {/* Header */}
       <div>
-        <h2 className="text-2xl font-bold text-slate-900">Portfolio Rebalancer</h2>
-        <p className="text-slate-500 text-sm mt-1">Set target allocation — sliders auto-balance to 100%</p>
+        <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Rebalancer</h2>
+        <p className="text-slate-400 dark:text-slate-500 text-sm mt-1">Set target allocations and get buy/sell recommendations</p>
       </div>
 
       {loading ? (
-        <div className="space-y-4"><Skeleton className="h-64 w-full" /></div>
+        <div className="space-y-4"><SkeletonCard /><SkeletonCard /></div>
       ) : investments.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-12 text-center">
-          <p className="text-5xl mb-3">⚖️</p>
-          <p className="text-slate-700 font-semibold">No investments yet</p>
-          <p className="text-slate-400 text-sm mt-1">Add investments in the Portfolio tab to use the rebalancer.</p>
+        <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-lg p-12 text-center">
+          <ScaleIcon className="w-10 h-10 text-slate-300 dark:text-slate-700 mx-auto mb-3" />
+          <p className="text-slate-700 dark:text-slate-300 font-semibold">No investments to rebalance</p>
+          <p className="text-slate-400 dark:text-slate-500 text-sm mt-1">Add some investments first to use the rebalancer.</p>
         </div>
       ) : (
-        <>
-          {/* Sliders */}
-          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 space-y-5">
-            <div className="flex justify-between items-center">
-              <h3 className="font-semibold text-slate-900">Target Allocation</h3>
-              {/* Always 100% — show green tick */}
-              <span className="text-sm font-medium px-3 py-1 rounded-full bg-emerald-50 text-emerald-700">
-                Total: 100% ✓
-              </span>
-            </div>
+        <div className="grid lg:grid-cols-2 gap-6">
 
-            {INVESTMENT_TYPES.map((type) => (
-              <div key={type}>
-                <div className="flex justify-between items-center mb-1.5">
-                  <div className="flex items-center gap-2">
-                    <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: TYPE_COLORS[type] }} />
-                    <label className="text-sm font-medium text-slate-700">{type}</label>
+          {/* ── Target Allocation Sliders ── */}
+          <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-lg p-6">
+            <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-1">Target Allocation</h3>
+            <p className="text-xs text-slate-400 dark:text-slate-500 mb-5">Adjust sliders — total always equals 100%</p>
+
+            <div className="space-y-5">
+              {INVESTMENT_TYPES.map((type) => (
+                <div key={type}>
+                  <div className="flex justify-between items-center mb-1.5">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: TYPE_COLORS[type] }} />
+                      <label className="text-sm font-medium text-slate-700 dark:text-slate-300">{type}</label>
+                    </div>
+                    <span className="text-sm font-bold text-slate-900 dark:text-white">{targets[type]}%</span>
                   </div>
-                  <span className="text-sm font-bold text-indigo-600">{targets[type]}%</span>
+                  <input type="range" min="0" max="100" value={targets[type]}
+                    onChange={(e) => handleTargetChange(type, e.target.value)}
+                    className="w-full h-1.5 cursor-pointer"
+                  />
+                  <div className="flex justify-between text-xs text-slate-400 dark:text-slate-500 mt-1">
+                    <span>Actual: {actual[type].toFixed(1)}%</span>
+                    <span>Target: {targets[type]}%</span>
+                  </div>
                 </div>
-                {/* Single consistent accent color avoids black/white on Safari/iOS */}
-                <input type="range" min="0" max="100" value={targets[type]}
-                  onChange={(e) => handleTargetChange(type, e.target.value)}
-                  className="w-full h-2 cursor-pointer accent-indigo-600"
-                />
-                <div className="flex justify-between text-xs text-slate-400 mt-1">
-                  <span>Actual: {actual[type].toFixed(1)}%</span>
-                  <span>Target: {targets[type]}%</span>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
 
-          {/* Radar chart */}
-          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
-            <h3 className="font-semibold text-slate-900 mb-4">Target vs Actual</h3>
+          {/* ── Radar Chart ── */}
+          <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-lg p-6">
+            <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-4">Target vs. Actual</h3>
             <ResponsiveContainer width="100%" height={260}>
               <RadarChart data={radarData}>
-                <PolarGrid stroke="#f1f5f9" />
+                <PolarGrid stroke="#e2e8f0" strokeOpacity={0.2} />
                 <PolarAngleAxis dataKey="type" tick={{ fontSize: 12, fill: '#64748b' }} />
-                <Radar name="Target" dataKey="Target" stroke="#6366f1" fill="#6366f1" fillOpacity={0.15} strokeWidth={2} />
-                <Radar name="Actual" dataKey="Actual" stroke="#a855f7" fill="#a855f7" fillOpacity={0.15} strokeWidth={2} />
-                <Tooltip />
+                <Radar name="Target" dataKey="target" stroke="#6366f1" fill="#6366f1" fillOpacity={0.15} strokeWidth={2} />
+                <Radar name="Actual" dataKey="actual" stroke="#94a3b8" fill="#94a3b8" fillOpacity={0.1} strokeWidth={1.5} strokeDasharray="4 3" />
               </RadarChart>
             </ResponsiveContainer>
             <div className="flex justify-center gap-6 mt-2">
-              <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-indigo-500" /><span className="text-xs text-slate-500">Target</span></div>
-              <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-purple-500" /><span className="text-xs text-slate-500">Actual</span></div>
+              <div className="flex items-center gap-1.5">
+                <div className="w-3 h-0.5 bg-indigo-500 rounded" />
+                <span className="text-xs text-slate-500 dark:text-slate-400">Target</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="w-3 h-0.5 bg-slate-400 rounded" style={{ borderTop: '2px dashed #94a3b8' }} />
+                <span className="text-xs text-slate-500 dark:text-slate-400">Actual</span>
+              </div>
             </div>
           </div>
 
-          {/* Buy/Sell suggestions */}
-          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
-            <h3 className="font-semibold text-slate-900 mb-4">📋 What to do</h3>
-            <div className="space-y-3">
-              {suggestions.map((s) => {
-                const onTarget = Math.abs(s.diff) < 500
-                const isBuy    = s.diff > 0
-                return (
-                  <div key={s.type}
-                    className={`flex items-center justify-between p-4 rounded-xl border ${
-                      onTarget ? 'bg-slate-50 border-slate-100'
-                      : isBuy  ? 'bg-emerald-50 border-emerald-100'
-                               : 'bg-red-50 border-red-100'
-                    }`}>
-                    <div className="flex items-center gap-3">
-                      <div className="w-3 h-3 rounded-full" style={{ background: TYPE_COLORS[s.type] }} />
-                      <div>
-                        <p className="text-sm font-medium text-slate-800">{s.type}</p>
-                        <p className="text-xs text-slate-400">{s.actualPercent.toFixed(1)}% actual → {s.targetPercent}% target</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      {onTarget ? (
-                        <span className="text-xs font-medium text-slate-400">✅ On track</span>
-                      ) : (
-                        <>
-                          <span className={`text-sm font-bold ${isBuy ? 'text-emerald-600' : 'text-red-500'}`}>
-                            {isBuy ? '▲ BUY' : '▼ SELL'}
-                          </span>
-                          <p className="text-xs text-slate-500 mt-0.5">₹{Math.abs(s.diff).toLocaleString('en-IN')}</p>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                )
-              })}
+          {/* ── Recommendations Table ── */}
+          <div className="lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-lg overflow-hidden">
+            <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800">
+              <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Recommendations</h3>
             </div>
-            <p className="text-xs text-slate-400 mt-4 text-center">
-              Based on portfolio value of ₹{totalPortfolio.toLocaleString('en-IN')}
-            </p>
+
+            {/* Table header */}
+            <div className="hidden sm:grid sm:grid-cols-6 gap-4 px-6 py-2.5 bg-slate-50 dark:bg-slate-800/50 text-xs font-medium text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+              <div className="col-span-1">Type</div>
+              <div className="col-span-1 text-right">Current</div>
+              <div className="col-span-1 text-right">Target</div>
+              <div className="col-span-1 text-right">Difference</div>
+              <div className="col-span-1 text-center">Action</div>
+              <div className="col-span-1 text-right">Amount</div>
+            </div>
+
+            <div className="divide-y divide-slate-50 dark:divide-slate-800">
+              {suggestions.map((s) => (
+                <div key={s.type} className="grid grid-cols-2 sm:grid-cols-6 gap-2 sm:gap-4 items-center px-6 py-3.5 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                  {/* Type */}
+                  <div className="sm:col-span-1 flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full" style={{ background: TYPE_COLORS[s.type] }} />
+                    <span className="text-sm font-medium text-slate-800 dark:text-slate-200">{s.type}</span>
+                  </div>
+
+                  {/* Current */}
+                  <div className="sm:col-span-1 text-right">
+                    <span className="text-sm text-slate-600 dark:text-slate-400">{'\u20B9'}{s.actual.toLocaleString('en-IN')}</span>
+                  </div>
+
+                  {/* Target */}
+                  <div className="sm:col-span-1 text-right">
+                    <span className="text-sm text-slate-600 dark:text-slate-400">{'\u20B9'}{Math.round(s.target).toLocaleString('en-IN')}</span>
+                  </div>
+
+                  {/* Diff */}
+                  <div className="sm:col-span-1 text-right">
+                    <span className={`text-sm font-medium ${s.diff > 0 ? 'text-emerald-600 dark:text-emerald-400' : s.diff < 0 ? 'text-red-500 dark:text-red-400' : 'text-slate-400 dark:text-slate-500'}`}>
+                      {s.diff > 0 ? '+' : ''}{'\u20B9'}{Math.round(Math.abs(s.diff)).toLocaleString('en-IN')}
+                    </span>
+                  </div>
+
+                  {/* Action badge */}
+                  <div className="sm:col-span-1 flex justify-center">
+                    {s.action === 'BUY' && (
+                      <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400">
+                        <ArrowUpIcon className="w-3 h-3" /> BUY
+                      </span>
+                    )}
+                    {s.action === 'SELL' && (
+                      <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400">
+                        <ArrowDownIcon className="w-3 h-3" /> SELL
+                      </span>
+                    )}
+                    {s.action === 'HOLD' && (
+                      <span className="text-xs font-semibold px-2.5 py-1 rounded bg-slate-50 dark:bg-slate-800 text-slate-400 dark:text-slate-500">
+                        HOLD
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Amount */}
+                  <div className="sm:col-span-1 text-right">
+                    <span className={`text-sm font-semibold ${s.action === 'BUY' ? 'text-emerald-700 dark:text-emerald-500' : s.action === 'SELL' ? 'text-red-600 dark:text-red-500' : 'text-slate-400 dark:text-slate-500'}`}>
+                      {s.action === 'HOLD' ? '—' : `\u20B9${Math.round(Math.abs(s.diff)).toLocaleString('en-IN')}`}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
-        </>
+        </div>
       )}
     </div>
   )
